@@ -4,7 +4,7 @@ import AuthSuccess from './pages/AuthSuccess'
 import Dashboard from './pages/Dashboard'
 import Repositories from './pages/Repositories'
 import KanbanPage from './pages/KanbanPage'
-import Notes from './pages/Notes'
+import Notes from './pages/Note'
 import Layout from './components/layout/Layout'
 import { useAuthStore } from './store/authStore'
 
