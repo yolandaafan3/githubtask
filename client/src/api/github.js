@@ -182,3 +182,65 @@ export async function ensureKanbanLabels(owner, repo) {
     }
   }
 }
+
+// ─── ESTADÍSTICAS ────────────────────────────────────────────
+
+export async function fetchRecentActivity(owner) {
+  const octokit = getOctokit()
+  try {
+    const { data } = await octokit.activity.listPublicEventsForUser({
+      username: owner,
+      per_page: 30,
+    })
+    return data
+  } catch {
+    return []
+  }
+}
+
+export async function fetchCommitActivity(owner, repo) {
+  const octokit = getOctokit()
+  try {
+    const { data } = await octokit.repos.getCommitActivityStats({ owner, repo })
+    return data || []
+  } catch {
+    return []
+  }
+}
+
+export async function fetchAllIssuesForStats(repos) {
+  const octokit = getOctokit()
+  const results = []
+
+  // Trae issues de los primeros 5 repos más activos para no saturar la API
+  const topRepos = repos.slice(0, 5)
+
+  await Promise.allSettled(
+    topRepos.map(async (repo) => {
+      try {
+        const { data } = await octokit.issues.listForRepo({
+          owner: repo.owner.login,
+          repo: repo.name,
+          state: 'all',
+          per_page: 50,
+        })
+        const onlyIssues = data.filter(i => !i.pull_request)
+        results.push(...onlyIssues.map(i => ({ ...i, repoName: repo.name })))
+      } catch {
+        // Si no tiene acceso a algún repo, lo omite silenciosamente
+      }
+    })
+  )
+
+  return results
+}
+
+export async function fetchUserStats(username) {
+  const octokit = getOctokit()
+  try {
+    const { data } = await octokit.users.getByUsername({ username })
+    return data
+  } catch {
+    return null
+  }
+}
