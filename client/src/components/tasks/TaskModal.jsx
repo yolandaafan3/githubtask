@@ -1,31 +1,36 @@
 import { useState, useEffect } from 'react'
-import { ExternalLink, Tag, User, MessageSquare, CheckCircle, Circle } from 'lucide-react'
-import Modal from '../ui/Modals'
+import { ExternalLink, Tag, MessageSquare, CheckCircle, Circle } from 'lucide-react'
+import Modal from '../ui/Modal'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
+import AssigneeDropdown from './AssigneeDropdown'
 import { updateIssue, closeIssue, reopenIssue, fetchComments, createComment } from '../../api/github'
 import { timeAgo, formatDate } from '../../utils/helpers'
 import { useTaskStore } from '../../store/taskStore'
 
-export default function TaskModal({ issue, owner, repo, onClose }) {
+export default function TaskModal({ issue: initialIssue, owner, repo, onClose }) {
   const { updateIssue: updateStore } = useTaskStore()
-  const [comments, setComments] = useState([])
+
+  // Usamos estado local para reflejar cambios de asignación en tiempo real
+  const [issue,      setIssue]      = useState(initialIssue)
+  const [comments,   setComments]   = useState([])
   const [newComment, setNewComment] = useState('')
-  const [editing, setEditing] = useState(false)
-  const [editTitle, setEditTitle] = useState(issue?.title || '')
-  const [editBody, setEditBody] = useState(issue?.body || '')
-  const [loading, setLoading] = useState(false)
+  const [editing,    setEditing]    = useState(false)
+  const [editTitle,  setEditTitle]  = useState(initialIssue?.title || '')
+  const [editBody,   setEditBody]   = useState(initialIssue?.body  || '')
+  const [loading,    setLoading]    = useState(false)
 
   useEffect(() => {
-    if (!issue) return
-    setEditTitle(issue.title)
-    setEditBody(issue.body || '')
+    if (!initialIssue) return
+    setIssue(initialIssue)
+    setEditTitle(initialIssue.title)
+    setEditBody(initialIssue.body || '')
     loadComments()
-  }, [issue])
+  }, [initialIssue?.id])
 
   async function loadComments() {
     try {
-      const data = await fetchComments(owner, repo, issue.number)
+      const data = await fetchComments(owner, repo, initialIssue.number)
       setComments(data)
     } catch (err) {
       console.error('Error loading comments:', err)
@@ -37,9 +42,10 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
     try {
       const updated = await updateIssue(owner, repo, issue.number, {
         title: editTitle,
-        body: editBody,
+        body:  editBody,
       })
       updateStore(updated)
+      setIssue(updated)
       setEditing(false)
     } catch (err) {
       console.error('Error updating issue:', err)
@@ -52,12 +58,13 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
     setLoading(true)
     try {
       const updated = issue.state === 'open'
-        ? await closeIssue(owner, repo, issue.number)
+        ? await closeIssue(owner,  repo, issue.number)
         : await reopenIssue(owner, repo, issue.number)
       updateStore(updated)
+      setIssue(updated)
       onClose()
     } catch (err) {
-      console.error('Error toggling issue state:', err)
+      console.error('Error toggling state:', err)
     } finally {
       setLoading(false)
     }
@@ -77,11 +84,16 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
     }
   }
 
+  // Cuando el AssigneeDropdown actualiza el issue
+  function handleAssigneeUpdate(updatedIssue) {
+    setIssue(updatedIssue)
+  }
+
   if (!issue) return null
 
   return (
     <Modal isOpen={!!issue} onClose={onClose} title={`Issue #${issue.number}`} size="lg">
-      <div className="space-y-6">
+      <div className="space-y-5">
 
         {/* Título */}
         {editing ? (
@@ -93,54 +105,72 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
         ) : (
           <div className="flex items-start justify-between gap-3">
             <h3 className="text-white text-xl font-semibold leading-snug">{issue.title}</h3>
-
-<a
-  href={issue.html_url}
-  target="_blank"
-  rel="noopener noreferrer"
-  className="text-github-muted hover:text-white transition-colors shrink-0"
->
-  <ExternalLink size={16} />
-</a>
+            <a
+              href={issue.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-github-muted hover:text-white transition-colors shrink-0 mt-1"
+            >
+              <ExternalLink size={16} />
+            </a>
           </div>
         )}
 
-        {/* Meta */}
-        <div className="flex flex-wrap items-center gap-4 text-xs text-github-muted">
-          <span className={`flex items-center gap-1.5 ${issue.state === 'open' ? 'text-green-400' : 'text-purple-400'}`}>
-            {issue.state === 'open' ? <Circle size={12} /> : <CheckCircle size={12} />}
+        {/* Meta — estado y fecha */}
+        <div className="flex flex-wrap items-center gap-3 text-xs text-github-muted">
+          <span className={`flex items-center gap-1.5 font-medium ${
+            issue.state === 'open' ? 'text-green-400' : 'text-purple-400'
+          }`}>
+            {issue.state === 'open'
+              ? <Circle      size={12} />
+              : <CheckCircle size={12} />
+            }
             {issue.state}
           </span>
           <span>Opened {formatDate(issue.created_at)}</span>
           {issue.updated_at !== issue.created_at && (
             <span>Updated {timeAgo(issue.updated_at)}</span>
           )}
-          {issue.assignee && (
-            <span className="flex items-center gap-1.5">
-              <User size={12} />
-              <img src={issue.assignee.avatar_url} alt="" className="w-4 h-4 rounded-full" />
-              {issue.assignee.login}
-            </span>
+        </div>
+
+        {/* ── Asignación ───────────────────────────────────── */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <p className="text-xs text-github-muted mb-1.5 font-medium">Assignee</p>
+            <AssigneeDropdown
+              issue={issue}
+              owner={owner}
+              repo={repo}
+              onUpdate={handleAssigneeUpdate}
+            />
+          </div>
+
+          {/* Labels */}
+          {issue.labels?.length > 0 && (
+            <div>
+              <p className="text-xs text-github-muted mb-1.5 font-medium flex items-center gap-1">
+                <Tag size={11} /> Labels
+              </p>
+              <div className="flex flex-wrap gap-1 pt-1">
+                {issue.labels.map(label => (
+                  <Badge key={label.id} label={label} />
+                ))}
+              </div>
+            </div>
           )}
         </div>
 
-        {/* Labels */}
-        {issue.labels.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <Tag size={14} className="text-github-muted" />
-            {issue.labels.map(label => (
-              <Badge key={label.id} label={label} />
-            ))}
-          </div>
-        )}
-
-        {/* Body */}
+        {/* Body del issue */}
         <div className="border border-github-border rounded-xl overflow-hidden">
           <div className="px-4 py-2 bg-github-dark/50 border-b border-github-border flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <img src={issue.user.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+              <img
+                src={issue.user.avatar_url}
+                alt=""
+                className="w-5 h-5 rounded-full"
+              />
               <span className="text-xs text-github-muted">
-                <span className="text-white">{issue.user.login}</span> commented
+                <span className="text-white">{issue.user.login}</span> · {timeAgo(issue.created_at)}
               </span>
             </div>
             {!editing && (
@@ -152,6 +182,7 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
               </button>
             )}
           </div>
+
           <div className="p-4">
             {editing ? (
               <textarea
@@ -162,26 +193,33 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
                 placeholder="Leave a description..."
               />
             ) : (
-              <p className="text-github-text text-sm leading-relaxed whitespace-pre-wrap">
-                {issue.body || <span className="text-github-muted italic">No description provided.</span>}
+              <p className="text-github-text text-sm leading-relaxed whitespace-pre-wrap min-h-[2rem]">
+                {issue.body || (
+                  <span className="text-github-muted italic">No description provided.</span>
+                )}
               </p>
             )}
           </div>
         </div>
 
-        {/* Botones edición */}
+        {/* Botones de edición */}
         {editing && (
           <div className="flex items-center gap-2 justify-end">
             <Button variant="ghost" size="sm" onClick={() => setEditing(false)}>
               Cancel
             </Button>
-            <Button variant="primary" size="sm" onClick={handleSaveEdit} disabled={loading}>
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={handleSaveEdit}
+              disabled={loading}
+            >
               {loading ? 'Saving...' : 'Save changes'}
             </Button>
           </div>
         )}
 
-        {/* Comments */}
+        {/* Comentarios existentes */}
         {comments.length > 0 && (
           <div className="space-y-3">
             <div className="flex items-center gap-2 text-sm text-github-muted">
@@ -191,9 +229,14 @@ export default function TaskModal({ issue, owner, repo, onClose }) {
             {comments.map(comment => (
               <div key={comment.id} className="border border-github-border rounded-xl overflow-hidden">
                 <div className="px-4 py-2 bg-github-dark/50 border-b border-github-border flex items-center gap-2">
-                  <img src={comment.user.avatar_url} alt="" className="w-5 h-5 rounded-full" />
+                  <img
+                    src={comment.user.avatar_url}
+                    alt=""
+                    className="w-5 h-5 rounded-full"
+                  />
                   <span className="text-xs text-github-muted">
-                    <span className="text-white">{comment.user.login}</span> · {timeAgo(comment.created_at)}
+                    <span className="text-white">{comment.user.login}</span>
+                    {' · '}{timeAgo(comment.created_at)}
                   </span>
                 </div>
                 <div className="p-4">

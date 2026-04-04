@@ -184,15 +184,17 @@ export default function KanbanBoard({ owner, repo, labels }) {
         >
           <div className="flex gap-4 min-w-max">
             {KANBAN_COLUMNS.map(col => (
-              <KanbanColumn
-                key={col.id}
-                column={col}
-                issues={grouped[col.id] || []}
-                onCardClick={setSelectedIssue}
-                onAddClick={() => setShowCreate(true)}
-                activeId={activeIssue?.id}
-              />
-            ))}
+  <KanbanColumn
+    key={col.id}
+    column={col}
+    issues={grouped[col.id] || []}
+    onCardClick={setSelectedIssue}
+    onAddClick={() => setShowCreate(true)}
+    activeId={activeIssue?.id}
+    owner={owner}
+    repo={repo}
+  />
+))}
           </div>
 
           <DragOverlay dropAnimation={{

@@ -132,9 +132,27 @@ export async function fetchCollaborators(owner, repo) {
     })
     return data
   } catch {
-    // Si es un repo personal sin colaboradores, retorna solo el dueño
-    return []
+    // Si no tiene acceso a colaboradores (repo personal o sin permisos),
+    // devuelve al menos el dueño del repo para que siempre haya alguien asignable
+    try {
+      const { data } = await octokit.users.getByUsername({ username: owner })
+      return [data]
+    } catch {
+      return []
+    }
   }
+}
+
+// Nueva función para asignar/desasignar un issue
+export async function assignIssue(owner, repo, issueNumber, assignees) {
+  const octokit = getOctokit()
+  const { data } = await octokit.issues.update({
+    owner,
+    repo,
+    issue_number: issueNumber,
+    assignees,
+  })
+  return data
 }
 
 // ─── COMMENTS ───────────────────────────────────────────────

@@ -3,42 +3,32 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { Plus } from 'lucide-react'
 import DraggableCard from './DraggableCard'
 
-export default function KanbanColumn({ column, issues, onCardClick, onAddClick, activeId }) {
+export default function KanbanColumn({ column, issues, onCardClick, onAddClick, activeId, owner, repo }) {
   const { setNodeRef, isOver } = useDroppable({ id: column.id })
 
   return (
     <div className="flex flex-col w-72 shrink-0">
-
-      {/* Header de columna */}
       <div className={`
         flex items-center justify-between px-4 py-3 rounded-t-xl border-t-2 border-x
-        bg-github-card border-github-border
-        ${column.borderColor}
+        bg-github-card border-github-border ${column.borderColor}
       `}>
         <div className="flex items-center gap-2">
-          <span
-            className="w-2.5 h-2.5 rounded-full"
-            style={{ backgroundColor: column.color }}
-          />
+          <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: column.color }} />
           <span className="text-white text-sm font-semibold">{column.label}</span>
           <span className="text-xs px-2 py-0.5 rounded-full bg-github-dark text-github-muted border border-github-border">
             {issues.length}
           </span>
         </div>
-
-        {/* Solo las columnas activas permiten crear */}
         {column.id !== 'done' && (
           <button
             onClick={() => onAddClick(column.id)}
             className="p-1 rounded-md text-github-muted hover:text-white hover:bg-github-border transition-colors"
-            title="Add issue"
           >
             <Plus size={15} />
           </button>
         )}
       </div>
 
-      {/* Zona droppable */}
       <div
         ref={setNodeRef}
         className={`
@@ -47,23 +37,21 @@ export default function KanbanColumn({ column, issues, onCardClick, onAddClick, 
           ${isOver ? 'bg-github-blue/5 border-github-blue/30' : 'bg-github-dark/30'}
         `}
       >
-        <SortableContext
-          items={issues.map(i => i.id)}
-          strategy={verticalListSortingStrategy}
-        >
+        <SortableContext items={issues.map(i => i.id)} strategy={verticalListSortingStrategy}>
           <div className="space-y-2">
             {issues.map(issue => (
               <DraggableCard
                 key={issue.id}
                 issue={issue}
                 onClick={onCardClick}
+                owner={owner}
+                repo={repo}
                 isDragging={activeId === issue.id}
               />
             ))}
           </div>
         </SortableContext>
 
-        {/* Placeholder cuando la columna está vacía */}
         {issues.length === 0 && (
           <div className={`
             h-20 rounded-lg border-2 border-dashed flex items-center justify-center
