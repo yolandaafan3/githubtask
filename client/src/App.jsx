@@ -5,6 +5,7 @@ import Dashboard from './pages/Dashboard'
 import Repositories from './pages/Repositories'
 import KanbanPage from './pages/KanbanPage'
 import Notes from './pages/Note'
+import GlobalKanban from './pages/GlobalKanban'
 import Layout from './components/layout/Layout'
 import { useAuthStore } from './store/authStore'
 
@@ -28,6 +29,7 @@ function App() {
           <Route path="repos" element={<Repositories />} />
           <Route path="repos/:owner/:repo/kanban" element={<KanbanPage />} />
           <Route path="repos/:owner/:repo/notes" element={<Notes />} />
+          <Route path="global" element={<GlobalKanban />} />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -4,10 +4,12 @@ import { useAuth } from '../../hooks/useAuth'
 import { useSearchStore } from '../../store/searchStore'
 import { useSearchShortcut } from '../../hooks/useSearchShortcut'
 import SearchPalette from '../search/SearchPalette'
+import { LayoutDashboard, GitBranch, Layers, LogOut, ChevronRight, Search, Command } from 'lucide-react'
 
 const NAV_ITEMS = [
-  { to: '/',      icon: <LayoutDashboard size={18} />, label: 'Dashboard',    end: true },
-  { to: '/repos', icon: <GitBranch       size={18} />, label: 'Repositories'            },
+  { to: '/',       icon: <LayoutDashboard size={18} />, label: 'Dashboard',    end: true },
+  { to: '/repos',  icon: <GitBranch       size={18} />, label: 'Repositories'            },
+  { to: '/global', icon: <Layers          size={18} />, label: 'Global Board'            },
 ]
 
 export default function Layout() {
