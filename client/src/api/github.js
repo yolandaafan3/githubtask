@@ -160,3 +160,25 @@ export async function createComment(owner, repo, issueNumber, body) {
   })
   return data
 }
+
+// Crea los labels de Kanban si no existen en el repo
+export async function ensureKanbanLabels(owner, repo) {
+  const octokit = getOctokit()
+  const needed = [
+    { name: 'in progress', color: '1f6feb', description: 'Currently being worked on' },
+    { name: 'review',      color: 'd29922', description: 'Waiting for review' },
+  ]
+
+  const existing = await fetchLabels(owner, repo)
+  const existingNames = existing.map(l => l.name.toLowerCase())
+
+  for (const label of needed) {
+    if (!existingNames.includes(label.name)) {
+      try {
+        await octokit.issues.createLabel({ owner, repo, ...label })
+      } catch {
+        // Si ya existe por alguna razón, ignorar
+      }
+    }
+  }
+}
