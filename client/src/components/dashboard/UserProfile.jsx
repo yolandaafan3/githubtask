@@ -1,11 +1,10 @@
-import { Users, GitBranch, Star, MapPin, Link, Twitter } from 'lucide-react'
+import { Users, GitBranch, Star, MapPin, Link, AtSign } from 'lucide-react'
 
 export default function UserProfile({ user, totalStars }) {
   if (!user) return null
 
   return (
     <div className="bg-github-card border border-github-border rounded-xl p-5">
-
       {/* Avatar y nombre */}
       <div className="flex items-start gap-4 mb-4">
         <img
@@ -33,7 +32,10 @@ export default function UserProfile({ user, totalStars }) {
           { icon: <Users size={13} />, value: user.followers, label: 'Followers' },
           { icon: <Star size={13} />, value: totalStars, label: 'Stars' },
         ].map(({ icon, value, label }) => (
-          <div key={label} className="bg-github-dark rounded-lg px-3 py-2 text-center border border-github-border">
+          <div
+            key={label}
+            className="bg-github-dark rounded-lg px-3 py-2 text-center border border-github-border"
+          >
             <div className="flex items-center justify-center gap-1 text-github-muted mb-1">
               {icon}
             </div>
@@ -70,7 +72,7 @@ export default function UserProfile({ user, totalStars }) {
             rel="noopener noreferrer"
             className="flex items-center gap-2 hover:text-white transition-colors"
           >
-            <Twitter size={12} className="shrink-0" />
+            <AtSign size={12} className="shrink-0" />
             @{user.twitter_username}
           </a>
         )}

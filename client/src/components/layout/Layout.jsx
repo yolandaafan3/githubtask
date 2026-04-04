@@ -1,20 +1,30 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, GitBranch, FileText, LogOut, ChevronRight } from 'lucide-react'
+import { LayoutDashboard, GitBranch, LogOut, ChevronRight, Search, Command } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
+import { useSearchStore } from '../../store/searchStore'
+import { useSearchShortcut } from '../../hooks/useSearchShortcut'
+import SearchPalette from '../search/SearchPalette'
 
 const NAV_ITEMS = [
-  { to: '/', icon: <LayoutDashboard size={18} />, label: 'Dashboard', end: true },
-  { to: '/repos', icon: <GitBranch size={18} />, label: 'Repositories' },
+  { to: '/',      icon: <LayoutDashboard size={18} />, label: 'Dashboard',    end: true },
+  { to: '/repos', icon: <GitBranch       size={18} />, label: 'Repositories'            },
 ]
 
 export default function Layout() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const open = useSearchStore(state => state.open)
+
+  // Registra el shortcut Cmd+K / Ctrl+K globalmente
+  useSearchShortcut()
+
+  // Detecta si es Mac para mostrar el ícono correcto
+  const isMac = navigator.platform.toUpperCase().includes('MAC')
 
   return (
     <div className="min-h-screen bg-github-dark flex">
 
-      {/* Sidebar */}
+      {/* ── Sidebar ───────────────────────────────────────── */}
       <aside className="w-60 shrink-0 bg-github-card border-r border-github-border flex flex-col">
 
         {/* Logo */}
@@ -30,8 +40,27 @@ export default function Layout() {
           <span className="text-white font-bold text-sm tracking-tight">GithubTask</span>
         </div>
 
+        {/* Botón de búsqueda */}
+        <div className="px-3 pt-3">
+          <button
+            onClick={open}
+            className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-github-dark border border-github-border text-github-muted hover:text-white hover:border-gray-500 transition-all text-sm group"
+          >
+            <span className="flex items-center gap-2">
+              <Search size={14} />
+              <span className="text-xs">Search...</span>
+            </span>
+            <span className="flex items-center gap-0.5 text-xs opacity-60 group-hover:opacity-100 transition-opacity">
+              {isMac
+                ? <><Command size={11} /><span>K</span></>
+                : <span>Ctrl K</span>
+              }
+            </span>
+          </button>
+        </div>
+
         {/* Nav */}
-        <nav className="flex-1 px-3 py-4 space-y-1">
+        <nav className="flex-1 px-3 py-3 space-y-1">
           {NAV_ITEMS.map(item => (
             <NavLink
               key={item.to}
@@ -41,7 +70,7 @@ export default function Layout() {
                 `flex items-center justify-between px-3 py-2 rounded-lg text-sm font-medium transition-colors group ${
                   isActive
                     ? 'bg-github-blue/10 text-github-blue border border-github-blue/20'
-                    : 'text-github-muted hover:text-white hover:bg-github-border'
+                    : 'text-github-muted hover:text-white hover:bg-github-border border border-transparent'
                 }`
               }
             >
@@ -79,12 +108,15 @@ export default function Layout() {
         )}
       </aside>
 
-      {/* Contenido principal */}
+      {/* ── Contenido principal ───────────────────────────── */}
       <main className="flex-1 overflow-auto">
         <div className="p-6 max-w-screen-xl mx-auto">
           <Outlet />
         </div>
       </main>
+
+      {/* ── Paleta de búsqueda global ─────────────────────── */}
+      <SearchPalette />
     </div>
   )
 }

@@ -34,6 +34,8 @@ export default function KanbanPage() {
       fetchRepo(owner, repo),
     ])
     setIssues(issuesData)
+    // Etiqueta cada issue con el nombre del repo para la búsqueda global
+  useTaskStore.getState().addRepoNameToIssues(repo)
     setLabels(labelsData)
     setRepoData(repoInfo)
     await ensureKanbanLabels(owner, repo)

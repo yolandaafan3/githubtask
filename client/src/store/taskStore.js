@@ -79,4 +79,8 @@ export const useTaskStore = create((set, get) => ({
   })),
 
   getGrouped: () => groupIssuesByColumn(get().issues),
+  // Agrega esto dentro del create, después de getGrouped:
+addRepoNameToIssues: (repoName) => set((state) => ({
+  issues: state.issues.map(i => ({ ...i, repoName })),
+})),
 }))
