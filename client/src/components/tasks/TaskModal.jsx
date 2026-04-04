@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ExternalLink, Tag, User, MessageSquare, CheckCircle, Circle } from 'lucide-react'
-import Modal from '../ui/Modal'
+import Modal from '../ui/Modals'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import { updateIssue, closeIssue, reopenIssue, fetchComments, createComment } from '../../api/github'

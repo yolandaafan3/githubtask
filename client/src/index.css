@@ -33,3 +33,86 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #8b949e;
 }
+
+/* ── MD Editor dark theme overrides ─────────────────── */
+.w-md-editor {
+  background-color: transparent !important;
+  border: 1px solid #30363d !important;
+  border-radius: 12px !important;
+  height: 100% !important;
+}
+
+.w-md-editor-toolbar {
+  background-color: #161b22 !important;
+  border-bottom: 1px solid #30363d !important;
+  border-radius: 12px 12px 0 0 !important;
+  padding: 4px 8px !important;
+}
+
+.w-md-editor-toolbar li button {
+  color: #8b949e !important;
+}
+
+.w-md-editor-toolbar li button:hover {
+  color: #c9d1d9 !important;
+  background-color: #30363d !important;
+}
+
+.w-md-editor-content {
+  background-color: #0d1117 !important;
+  border-radius: 0 0 12px 12px !important;
+}
+
+.w-md-editor-text-pre,
+.w-md-editor-text-input,
+.w-md-editor-text {
+  color: #c9d1d9 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+}
+
+.wmde-markdown {
+  background-color: #0d1117 !important;
+  color: #c9d1d9 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  padding: 16px !important;
+}
+
+.wmde-markdown h1,
+.wmde-markdown h2,
+.wmde-markdown h3 {
+  color: #ffffff !important;
+  border-bottom: 1px solid #30363d !important;
+}
+
+.wmde-markdown code {
+  background-color: #161b22 !important;
+  color: #79c0ff !important;
+  border-radius: 4px !important;
+  padding: 2px 6px !important;
+}
+
+.wmde-markdown pre {
+  background-color: #161b22 !important;
+  border: 1px solid #30363d !important;
+  border-radius: 8px !important;
+}
+
+.wmde-markdown blockquote {
+  border-left: 3px solid #1f6feb !important;
+  color: #8b949e !important;
+}
+
+.wmde-markdown a {
+  color: #1f6feb !important;
+}
+
+.wmde-markdown table th {
+  background-color: #161b22 !important;
+}
+
+.wmde-markdown table td,
+.wmde-markdown table th {
+  border-color: #30363d !important;
+}
