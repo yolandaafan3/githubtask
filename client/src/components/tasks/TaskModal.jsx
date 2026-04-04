@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { ExternalLink, Tag, MessageSquare, CheckCircle, Circle } from 'lucide-react'
-import Modal from '../ui/Modal'
+import Modal from '../ui/Modals'
 import Button from '../ui/Button'
 import { Badge } from '../ui/Badge'
 import AssigneeDropdown from './AssigneeDropdown'

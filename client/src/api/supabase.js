@@ -124,3 +124,48 @@ export async function clearMultiRepoSelections(userGithubId) {
 
   if (error) throw error
 }
+
+// ─── ISSUE TEMPLATES ─────────────────────────────────────────
+
+export async function getTemplates(userGithubId) {
+  const { data, error } = await supabase
+    .from('issue_templates')
+    .select('*')
+    .eq('user_github_id', userGithubId)
+    .order('created_at', { ascending: true })
+
+  if (error) throw error
+  return data
+}
+
+export async function createTemplate(userGithubId, template) {
+  const { data, error } = await supabase
+    .from('issue_templates')
+    .insert({ user_github_id: userGithubId, ...template })
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateTemplate(templateId, updates) {
+  const { data, error } = await supabase
+    .from('issue_templates')
+    .update(updates)
+    .eq('id', templateId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteTemplate(templateId) {
+  const { error } = await supabase
+    .from('issue_templates')
+    .delete()
+    .eq('id', templateId)
+
+  if (error) throw error
+}

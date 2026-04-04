@@ -8,6 +8,7 @@ import Notes from './pages/Note'
 import GlobalKanban from './pages/GlobalKanban'
 import Layout from './components/layout/Layout'
 import { useAuthStore } from './store/authStore'
+import Templates from './pages/Templates'
 
 function PrivateRoute({ children }) {
   const token = useAuthStore(state => state.token)
@@ -30,6 +31,7 @@ function App() {
           <Route path="repos/:owner/:repo/kanban" element={<KanbanPage />} />
           <Route path="repos/:owner/:repo/notes" element={<Notes />} />
           <Route path="global" element={<GlobalKanban />} />
+          <Route path="templates" element={<Templates />} />
         </Route>
       </Routes>
     </BrowserRouter>

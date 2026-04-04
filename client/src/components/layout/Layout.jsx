@@ -1,5 +1,5 @@
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, GitBranch, LogOut, ChevronRight, Search, Command, Layers } from 'lucide-react'
+import { LayoutDashboard, GitBranch, Layers, FileText, LogOut, ChevronRight, Search, Command } from 'lucide-react'
 import { useAuth } from '../../hooks/useAuth'
 import { useSearchStore } from '../../store/searchStore'
 import { useSearchShortcut } from '../../hooks/useSearchShortcut'
@@ -7,9 +7,10 @@ import SearchPalette from '../search/SearchPalette'
 
 
 const NAV_ITEMS = [
-  { to: '/',       icon: <LayoutDashboard size={18} />, label: 'Dashboard',    end: true },
-  { to: '/repos',  icon: <GitBranch       size={18} />, label: 'Repositories'            },
-  { to: '/global', icon: <Layers          size={18} />, label: 'Global Board'            },
+  { to: '/',          icon: <LayoutDashboard size={18} />, label: 'Dashboard',    end: true },
+  { to: '/repos',     icon: <GitBranch       size={18} />, label: 'Repositories'            },
+  { to: '/global',    icon: <Layers          size={18} />, label: 'Global Board'            },
+  { to: '/templates', icon: <FileText        size={18} />, label: 'Templates'               },
 ]
 
 export default function Layout() {
