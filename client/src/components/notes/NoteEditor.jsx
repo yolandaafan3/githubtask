@@ -4,6 +4,8 @@ import { Save, Tag, X, Pin, Clock } from 'lucide-react'
 import { updateNote } from '../../api/supabase'
 import { useNotesStore } from '../../store/notesStore'
 import { formatDate } from '../../utils/helpers'
+// Al inicio del archivo, agrega el import:
+import ExportMenu from './ExportMenu'
 
 // Guarda automáticamente 1.5 segundos después del último cambio
 const AUTOSAVE_DELAY = 1500
@@ -17,6 +19,8 @@ export default function NoteEditor({ note }) {
   const [tagInput, setTagInput] = useState('')
   const [lastSaved, setLastSaved] = useState(null)
   const [isDirty, setIsDirty] = useState(false)
+  // Dentro del componente, extrae folders y moveNoteToFolder:
+const { folders, moveNoteToFolder } = useNotesStore()
 
   const autosaveTimer = useRef(null)
 
@@ -54,6 +58,7 @@ export default function NoteEditor({ note }) {
       setSaving(false)
     }
   }, [note.id, title, content, tags])
+  
 
   function handleTitleChange(e) {
     setTitle(e.target.value)
@@ -77,6 +82,23 @@ export default function NoteEditor({ note }) {
       setTagInput('')
     }
   }
+  
+
+// En el JSX, debajo del input de título, agrega el selector de carpeta:
+<div className="flex items-center gap-2 px-4 py-1 border-b border-gray-100 dark:border-gray-700">
+  <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 7a2 2 0 012-2h4l2 2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+  </svg>
+  <select
+    value={selectedNote?.folder || 'General'}
+    onChange={e => moveNoteToFolder(selectedNote.id, e.target.value)}
+    className="text-xs text-gray-500 dark:text-gray-400 bg-transparent border-none outline-none cursor-pointer hover:text-gray-700 dark:hover:text-gray-200"
+  >
+    {folders.map(f => (
+      <option key={f} value={f}>{f}</option>
+    ))}
+  </select>
+</div>
 
   function removeTag(tag) {
     const newTags = tags.filter(t => t !== tag)
@@ -89,32 +111,34 @@ export default function NoteEditor({ note }) {
 
       {/* Header del editor */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-github-border shrink-0">
-        <div className="flex items-center gap-3 text-xs text-github-muted">
-          {isDirty && (
-            <span className="flex items-center gap-1 text-yellow-500">
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
-              Unsaved changes
-            </span>
-          )}
-          {!isDirty && lastSaved && (
-            <span className="flex items-center gap-1 text-green-500">
-              <Save size={11} /> Saved
-            </span>
-          )}
-          <span className="flex items-center gap-1">
-            <Clock size={11} />
-            {formatDate(note.updated_at)}
-          </span>
-        </div>
+  <div className="flex items-center gap-3 text-xs text-github-muted">
+    {isDirty && (
+      <span className="flex items-center gap-1 text-yellow-500">
+        <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
+        Unsaved changes
+      </span>
+    )}
+    {!isDirty && lastSaved && (
+      <span className="flex items-center gap-1 text-green-500">
+        <Save size={11} /> Saved
+      </span>
+    )}
+    <span className="flex items-center gap-1">
+      <Clock size={11} />
+      {formatDate(note.updated_at)}
+    </span>
+  </div>
 
-        <button
-          onClick={handleSave}
-          disabled={!isDirty}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-github-accent hover:bg-green-600 text-white text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          <Save size={12} /> Save now
-        </button>
-      </div>
+  <ExportMenu note={note} />
+
+  <button
+    onClick={handleSave}
+    disabled={!isDirty}
+    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-github-accent hover:bg-green-600 text-white text-xs font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+  >
+    <Save size={12} /> Save now
+  </button>
+</div>
 
       {/* Título */}
       <div className="px-6 pt-5 pb-3 shrink-0">

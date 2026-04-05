@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import Modal from '../ui/Modal'
+import Modal from '../ui/Modals'
 import Button from '../ui/Button'
 import { createIssue } from '../../api/github'
 import { useTaskStore } from '../../store/taskStore'

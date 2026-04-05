@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Plus, Loader, FileText } from 'lucide-react'
-import Modal from '../ui/Modal'
+import Modal from '../ui/Modals'
 import TemplateCard from './TemplateCard'
 import { getTemplates, createTemplate } from '../../api/supabase'
 import { useAuthStore } from '../../store/authStore'
