@@ -88,7 +88,8 @@ export default function NoteEditor({ note }) {
 
   async function handleFolderChange(e) {
     try {
-      await moveNoteToFolder(note.id, e.target.value)
+      const folderId = e.target.value || null
+      await moveNoteToFolder(note.id, folderId)
     } catch (err) {
       console.error('Failed to move note:', err)
     }
@@ -96,8 +97,11 @@ export default function NoteEditor({ note }) {
 
   return (
     <div className="flex flex-col h-full" data-color-mode="dark">
+
+      {/* Header */}
       <div className="flex items-center justify-between px-6 py-3 border-b border-github-border shrink-0">
         <div className="flex items-center gap-3 text-xs text-github-muted">
+
           {isDirty && (
             <span className="flex items-center gap-1 text-yellow-500">
               <span className="w-1.5 h-1.5 rounded-full bg-yellow-500 animate-pulse" />
@@ -135,6 +139,7 @@ export default function NoteEditor({ note }) {
         </div>
       </div>
 
+      {/* Title */}
       <div className="px-6 pt-5 pb-3 shrink-0">
         <input
           value={title}
@@ -144,8 +149,10 @@ export default function NoteEditor({ note }) {
         />
       </div>
 
+      {/* Folder selector (FIXED) */}
       <div className="px-6 pb-3 shrink-0">
         <div className="flex items-center gap-2 px-4 py-2 border border-github-border rounded-lg bg-github-card">
+
           <svg
             className="w-3.5 h-3.5 text-github-muted"
             fill="none"
@@ -161,19 +168,22 @@ export default function NoteEditor({ note }) {
           </svg>
 
           <select
-            value={note?.folder || 'General'}
+            value={note?.folder_id || ''}
             onChange={handleFolderChange}
             className="text-xs text-github-muted bg-transparent border-none outline-none cursor-pointer hover:text-white"
           >
+            <option value="">📂 General</option>
+
             {folders.map(folder => (
-              <option key={folder} value={folder}>
-                {folder}
+              <option key={folder.id} value={folder.id}>
+                {folder.icon} {folder.name}
               </option>
             ))}
           </select>
         </div>
       </div>
 
+      {/* Tags */}
       <div className="px-6 pb-4 shrink-0">
         <div className="flex items-center flex-wrap gap-2">
           {tags.map(tag => (
@@ -201,6 +211,7 @@ export default function NoteEditor({ note }) {
         </div>
       </div>
 
+      {/* Editor */}
       <div className="flex-1 overflow-hidden px-6 pb-6">
         <MDEditor
           value={content}
@@ -217,6 +228,7 @@ export default function NoteEditor({ note }) {
           }}
         />
       </div>
+
     </div>
   )
 }

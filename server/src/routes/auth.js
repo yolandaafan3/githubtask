@@ -106,4 +106,92 @@ router.get('/verify', async (req, res) => {
   }
 })
 
+
+// ── Perfil público ────────────────────────────────────────────
+// No requiere autenticación — datos públicos de GitHub
+router.get('/public/:username', async (req, res) => {
+  const { username } = req.params
+
+  try {
+    const headers = {
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+    }
+
+    // Si tienes un token de GitHub en el servidor lo usas para
+    // aumentar el rate limit (opcional pero recomendado)
+    if (process.env.GITHUB_PUBLIC_TOKEN) {
+      headers.Authorization = `Bearer ${process.env.GITHUB_PUBLIC_TOKEN}`
+    }
+
+    const [userRes, reposRes] = await Promise.all([
+      axios.get(`https://api.github.com/users/${username}`, { headers }),
+      axios.get(`https://api.github.com/users/${username}/repos`, {
+        headers,
+        params: { per_page: 100, sort: 'updated', type: 'public' },
+      }),
+    ])
+
+    const user  = userRes.data
+    const repos = reposRes.data
+
+    // Estadísticas calculadas
+    const totalStars = repos.reduce((s, r) => s + r.stargazers_count, 0)
+    const totalForks = repos.reduce((s, r) => s + r.forks_count,      0)
+    const languages  = {}
+    repos.forEach(r => {
+      if (r.language) languages[r.language] = (languages[r.language] || 0) + 1
+    })
+    const topLanguages = Object.entries(languages)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([lang, count]) => ({ lang, count }))
+
+    res.json({
+      user: {
+        login:        user.login,
+        name:         user.name || user.login,
+        avatar_url:   user.avatar_url,
+        bio:          user.bio,
+        location:     user.location,
+        blog:         user.blog,
+        twitter_username: user.twitter_username,
+        company:      user.company,
+        public_repos: user.public_repos,
+        followers:    user.followers,
+        following:    user.following,
+        created_at:   user.created_at,
+        html_url:     user.html_url,
+      },
+      repos: repos
+        .filter(r => !r.fork) // excluye forks por defecto
+        .sort((a, b) => b.stargazers_count - a.stargazers_count)
+        .slice(0, 12)
+        .map(r => ({
+          id:               r.id,
+          name:             r.name,
+          description:      r.description,
+          html_url:         r.html_url,
+          language:         r.language,
+          stargazers_count: r.stargazers_count,
+          forks_count:      r.forks_count,
+          open_issues_count: r.open_issues_count,
+          updated_at:       r.updated_at,
+          topics:           r.topics,
+        })),
+      stats: {
+        totalStars,
+        totalForks,
+        totalRepos: user.public_repos,
+        topLanguages,
+      },
+    })
+  } catch (err) {
+    if (err.response?.status === 404) {
+      return res.status(404).json({ error: 'User not found' })
+    }
+    console.error('Public profile error:', err.message)
+    res.status(500).json({ error: 'Failed to fetch profile' })
+  }
+})
 export default router

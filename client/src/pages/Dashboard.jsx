@@ -17,6 +17,9 @@ import TopRepos      from '../components/dashboard/TopRepos'
 import RecentIssues  from '../components/dashboard/RecentIssues'
 import UserProfile   from '../components/dashboard/UserProfile'
 import Spinner       from '../components/ui/Spinner'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { Share2, Check } from 'lucide-react'
 
 export default function Dashboard() {
   const navigate = useNavigate()
@@ -83,6 +86,7 @@ export default function Dashboard() {
   const recentIssues = [...issues].sort((a, b) =>
     new Date(b.updated_at) - new Date(a.updated_at)
   )
+  const [copied, setCopied] = useState(false)
 
   // Ratio de issues resueltos
   const resolveRate = issues.length > 0
@@ -96,6 +100,12 @@ export default function Dashboard() {
       </div>
     )
   }
+  function handleCopyPortfolio() {
+  const url = `${window.location.origin}/u/${user?.login}`
+  navigator.clipboard.writeText(url)
+  setCopied(true)
+  setTimeout(() => setCopied(false), 2000)
+}
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -123,6 +133,16 @@ export default function Dashboard() {
           {refreshing ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
+      <button
+  onClick={handleCopyPortfolio}
+  className="flex items-center gap-2 px-3 py-2 rounded-lg bg-github-card border border-github-border text-github-muted hover:text-white text-sm transition-colors"
+  title={`Your portfolio: /u/${user?.login}`}
+>
+  {copied
+    ? <><Check size={14} className="text-green-400" /> Copied!</>
+    : <><Share2 size={14} /> Share portfolio</>
+  }
+</button>
 
       {/* ── Stats cards ────────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { X } from 'lucide-react'
-import Modal from '../ui/Modal'
+import Modal from '../ui/Modals'
 import Button from '../ui/Button'
 
 const FOLDER_ICONS  = ['📁', '📂', '🗂️', '📌', '📎', '🔖', '💼', '🗃️', '📦', '🎯', '💡', '🔧']
