@@ -1,13 +1,109 @@
-import { createClient } from '@supabase/supabase-js'
+// ─── CARPETAS DE NOTAS ───────────────────────────────────────
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+export async function getFolders(userGithubId, repoOwner, repoName) {
+  const { data, error } = await supabase
+    .from('note_folders')
+    .select('*')
+    .eq('user_github_id', userGithubId)
+    .eq('repo_owner', repoOwner)
+    .eq('repo_name', repoName)
+    .order('position', { ascending: true })
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+  if (error) throw error
+  return data
+}
 
-// ─── NOTAS ──────────────────────────────────────────────────
+export async function createFolder(userGithubId, repoOwner, repoName, { name, color, icon, position }) {
+  const { data, error } = await supabase
+    .from('note_folders')
+    .insert({
+      user_github_id: userGithubId,
+      repo_owner: repoOwner,
+      repo_name: repoName,
+      name,
+      color: color || '1f6feb',
+      icon: icon || '📁',
+      position: position || 0,
+    })
+    .select()
+    .single()
 
-export async function getNotes(userGithubId, repoOwner, repoName) {
+  if (error) throw error
+  return data
+}
+
+export async function updateFolder(folderId, updates) {
+  const { data, error } = await supabase
+    .from('note_folders')
+    .update(updates)
+    .eq('id', folderId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function deleteFolder(folderId) {
+  const { error } = await supabase
+    .from('note_folders')
+    .delete()
+    .eq('id', folderId)
+
+  if (error) throw error
+}
+
+// ─── ORDEN DE NOTAS ──────────────────────────────────────────
+
+export async function updateNotePosition(noteId, position, folderId) {
+  const { data, error } = await supabase
+    .from('notes')
+    .update({ position, folder_id: folderId ?? null })
+    .eq('id', noteId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+export async function updateFolderPosition(folderId, position) {
+  const { data, error } = await supabase
+    .from('note_folders')
+    .update({ position })
+    .eq('id', folderId)
+    .select()
+    .single()
+
+  if (error) throw error
+  return data
+}
+
+// Actualiza el orden de muchas notas en batch
+export async function batchUpdateNotePositions(updates) {
+  // updates: [{ id, position, folder_id }]
+  const promises = updates.map(({ id, position, folder_id }) =>
+    supabase
+      .from('notes')
+      .update({ position, folder_id: folder_id ?? null })
+      .eq('id', id)
+  )
+  await Promise.all(promises)
+}
+
+export async function batchUpdateFolderPositions(updates) {
+  // updates: [{ id, position }]
+  const promises = updates.map(({ id, position }) =>
+    supabase
+      .from('note_folders')
+      .update({ position })
+      .eq('id', id)
+  )
+  await Promise.all(promises)
+}
+
+// Notas actualizadas para incluir folder_id y position
+export async function getNotesWithFolders(userGithubId, repoOwner, repoName) {
   const { data, error } = await supabase
     .from('notes')
     .select('*')
@@ -15,157 +111,9 @@ export async function getNotes(userGithubId, repoOwner, repoName) {
     .eq('repo_owner', repoOwner)
     .eq('repo_name', repoName)
     .order('pinned', { ascending: false })
+    .order('position', { ascending: true })
     .order('updated_at', { ascending: false })
 
   if (error) throw error
   return data
-}
-
-export async function createNote(userGithubId, repoOwner, repoName, { title, content, tags }) {
-  const { data, error } = await supabase
-    .from('notes')
-    .insert({
-      user_github_id: userGithubId,
-      repo_owner: repoOwner,
-      repo_name: repoName,
-      title: title || 'Untitled Note',
-      content: content || '',
-      tags: tags || [],
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-export async function updateNote(noteId, updates) {
-  const { data, error } = await supabase
-    .from('notes')
-    .update(updates)
-    .eq('id', noteId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-export async function deleteNote(noteId) {
-  const { error } = await supabase
-    .from('notes')
-    .delete()
-    .eq('id', noteId)
-
-  if (error) throw error
-}
-
-export async function togglePinNote(noteId, currentPinned) {
-  return updateNote(noteId, { pinned: !currentPinned })
-}
-
-export async function searchNotes(userGithubId, query) {
-  const { data, error } = await supabase
-    .from('notes')
-    .select('*')
-    .eq('user_github_id', userGithubId)
-    .or(`title.ilike.%${query}%,content.ilike.%${query}%`)
-    .order('updated_at', { ascending: false })
-
-  if (error) throw error
-  return data
-}
-
-// ─── MULTI-REPO SELECTIONS ───────────────────────────────────
-
-export async function getMultiRepoSelections(userGithubId) {
-  const { data, error } = await supabase
-    .from('multi_repo_selections')
-    .select('*')
-    .eq('user_github_id', userGithubId)
-    .order('created_at', { ascending: true })
-
-  if (error) throw error
-  return data
-}
-
-export async function addMultiRepoSelection(userGithubId, repo, color) {
-  const { data, error } = await supabase
-    .from('multi_repo_selections')
-    .insert({
-      user_github_id: userGithubId,
-      repo_owner: repo.owner.login,
-      repo_name: repo.name,
-      repo_full_name: `${repo.owner.login}/${repo.name}`,
-      color: color.replace('#', ''),
-    })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-export async function removeMultiRepoSelection(userGithubId, repoFullName) {
-  const { error } = await supabase
-    .from('multi_repo_selections')
-    .delete()
-    .eq('user_github_id', userGithubId)
-    .eq('repo_full_name', repoFullName)
-
-  if (error) throw error
-}
-
-export async function clearMultiRepoSelections(userGithubId) {
-  const { error } = await supabase
-    .from('multi_repo_selections')
-    .delete()
-    .eq('user_github_id', userGithubId)
-
-  if (error) throw error
-}
-
-// ─── ISSUE TEMPLATES ─────────────────────────────────────────
-
-export async function getTemplates(userGithubId) {
-  const { data, error } = await supabase
-    .from('issue_templates')
-    .select('*')
-    .eq('user_github_id', userGithubId)
-    .order('created_at', { ascending: true })
-
-  if (error) throw error
-  return data
-}
-
-export async function createTemplate(userGithubId, template) {
-  const { data, error } = await supabase
-    .from('issue_templates')
-    .insert({ user_github_id: userGithubId, ...template })
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-export async function updateTemplate(templateId, updates) {
-  const { data, error } = await supabase
-    .from('issue_templates')
-    .update(updates)
-    .eq('id', templateId)
-    .select()
-    .single()
-
-  if (error) throw error
-  return data
-}
-
-export async function deleteTemplate(templateId) {
-  const { error } = await supabase
-    .from('issue_templates')
-    .delete()
-    .eq('id', templateId)
-
-  if (error) throw error
 }
