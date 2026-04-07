@@ -20,45 +20,26 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Rutas públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/auth/success" element={<AuthSuccess />} />
-        <Route path="/" element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }>
+        <Route path="/u/:username" element={<PublicPortfolio />} />
+
+        {/* Rutas privadas */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Layout />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<Dashboard />} />
           <Route path="repos" element={<Repositories />} />
           <Route path="repos/:owner/:repo/kanban" element={<KanbanPage />} />
           <Route path="repos/:owner/:repo/notes" element={<Notes />} />
           <Route path="global" element={<GlobalKanban />} />
           <Route path="templates" element={<Templates />} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  )
-}
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        {/* Rutas públicas */}
-        <Route path="/login"        element={<Login />} />
-        <Route path="/auth/success" element={<AuthSuccess />} />
-        <Route path="/u/:username"  element={<PublicPortfolio />} />
-
-        {/* Rutas privadas */}
-        <Route path="/" element={
-          <PrivateRoute>
-            <Layout />
-          </PrivateRoute>
-        }>
-          <Route index                                    element={<Dashboard />}    />
-          <Route path="repos"                             element={<Repositories />} />
-          <Route path="repos/:owner/:repo/kanban"         element={<KanbanPage />}   />
-          <Route path="repos/:owner/:repo/notes"          element={<Notes />}        />
-          <Route path="global"                            element={<GlobalKanban />} />
-          <Route path="templates"                         element={<Templates />}    />
         </Route>
       </Routes>
     </BrowserRouter>

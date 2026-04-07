@@ -5,6 +5,7 @@ import { fetchIssues, fetchLabels, fetchRepo, ensureKanbanLabels } from '../api/
 import { useTaskStore } from '../store/taskStore'
 import KanbanBoard from '../components/tasks/KanbanBoard'
 import Spinner from '../components/ui/Spinner'
+import WebhookToggle from '../components/notifications/WebhookToggle'
 
 export default function KanbanPage() {
   const { owner, repo } = useParams()
@@ -95,6 +96,7 @@ export default function KanbanPage() {
                 <span className="text-white font-semibold">{labels.length}</span>
                 <span className="text-github-muted">labels</span>
               </div>
+              <WebhookToggle owner={owner} repo={repo} />
             </div>
 
             {repoData && (

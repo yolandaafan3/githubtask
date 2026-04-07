@@ -17,7 +17,6 @@ import TopRepos      from '../components/dashboard/TopRepos'
 import RecentIssues  from '../components/dashboard/RecentIssues'
 import UserProfile   from '../components/dashboard/UserProfile'
 import Spinner       from '../components/ui/Spinner'
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Share2, Check } from 'lucide-react'
 
